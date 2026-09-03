@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Libro, Categoria } from './libro.model';
+import { LibroService } from './libro.service';
 
 @Component({
   selector: 'app-book-management',
@@ -9,7 +10,10 @@ import { Libro, Categoria } from './libro.model';
   imports: [CommonModule, FormsModule],
   templateUrl: './book-management.component.html'
 })
-export class BookManagementComponent {
+export class BookManagementComponent implements OnInit {
+  private libroService = inject(LibroService);
+  private platformId = inject(PLATFORM_ID);
+
   categorias: Categoria[] = [
     { id: 'GASTRONOMÍA', nombre: 'Gastronomía', descripcion: 'Recetas, técnicas culinarias y cocina internacional.', color: 'from-amber-500 to-orange-600' },
     { id: 'DISEÑO DE MODA', nombre: 'Diseño de Moda', descripcion: 'Tendencias, patronaje e historia de la indumentaria.', color: 'from-pink-500 to-rose-600' },
@@ -19,10 +23,8 @@ export class BookManagementComponent {
     { id: 'HISTORIA', nombre: 'Historia', descripcion: 'Acontecimientos históricos, biografías y civilizaciones.', color: 'from-yellow-500 to-amber-700' }
   ];
 
-  libros: Libro[] = [
-    { id: 1, titulo: 'Gastronomía Peruana', autor: 'Gastón Acurio', categoria: 'GASTRONOMÍA', imagen: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600', estado: 'Disponible' },
-    { id: 2, titulo: 'Clean Code', autor: 'Robert C. Martin', categoria: 'TECNOLOGÍA', imagen: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600', estado: 'Disponible' }
-  ];
+  libros: Libro[] = [];
+  cargando = false;
 
   categoriaSeleccionada: Categoria | null = null;
   mostrarModal = false;
@@ -33,7 +35,26 @@ export class BookManagementComponent {
   nuevaCategoria = 'GASTRONOMÍA';
   nuevaImagen = '';
 
-  // Propiedades faltantes para las métricas
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.cargarLibros();
+    }
+  }
+
+  cargarLibros(): void {
+    this.cargando = true;
+    this.libroService.obtenerLibros().subscribe({
+      next: (datos) => {
+        this.libros = datos;
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al consultar NestJS:', err);
+        this.cargando = false;
+      }
+    });
+  }
+
   get totalDisponibles(): number {
     return this.libros.filter(l => l.estado === 'Disponible').length;
   }
@@ -66,27 +87,47 @@ export class BookManagementComponent {
 
   guardarLibro(): void {
     if (this.nuevoTitulo && this.nuevoAutor && this.nuevaCategoria) {
-      this.libros.unshift({
-        id: Date.now(),
+      const payload: Omit<Libro, 'id'> = {
         titulo: this.nuevoTitulo,
         autor: this.nuevoAutor,
         categoria: this.nuevaCategoria,
         imagen: this.nuevaImagen || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600',
         estado: 'Disponible'
-      });
+      };
 
-      this.nuevoTitulo = '';
-      this.nuevoAutor = '';
-      this.nuevaImagen = '';
-      this.mostrarModal = false;
+      this.libroService.crearLibro(payload).subscribe({
+        next: (libroCreado) => {
+          this.libros.unshift(libroCreado);
+          this.nuevoTitulo = '';
+          this.nuevoAutor = '';
+          this.nuevaImagen = '';
+          this.mostrarModal = false;
+        },
+        error: (err) => console.error('Error al guardar:', err)
+      });
     }
   }
 
-  eliminarLibro(id: number): void {
-    this.libros = this.libros.filter(l => l.id !== id);
+  eliminarLibro(id: number | string): void {
+    this.libroService.eliminarLibro(id).subscribe({
+      next: () => {
+        this.libros = this.libros.filter(l => l.id !== id);
+      },
+      error: (err) => console.error('Error al eliminar:', err)
+    });
   }
 
   alternarEstado(libro: Libro): void {
-    libro.estado = libro.estado === 'Disponible' ? 'Prestado' : 'Disponible';
+    const nuevoEstado = libro.estado === 'Disponible' ? 'Prestado' : 'Disponible';
+
+    this.libroService.actualizarEstado(libro.id!, nuevoEstado).subscribe({
+      next: (actualizado) => {
+        libro.estado = actualizado.estado;
+      },
+      error: () => {
+        // Alternado reactivo local en caso de fallback
+        libro.estado = nuevoEstado;
+      }
+    });
   }
 }
