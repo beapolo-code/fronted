@@ -1,0 +1,88 @@
+<div class="w-full">
+
+  <!-- CABECERA DE VIDEOS -->
+  <mat-card appearance="outlined" class="mb-7">
+    <mat-card-content class="flex flex-col gap-5 p-7! md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900 md:text-4xl">
+          Administración de Videos
+        </h1>
+        <p class="mt-2 text-slate-500">
+          Gestiona y visualiza el contenido multimedia de la biblioteca.
+        </p>
+      </div>
+
+      <button mat-flat-button color="primary">
+        <mat-icon>add</mat-icon>
+        Nuevo video
+      </button>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- BUSCADOR Y FILTROS -->
+  <section class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-[1fr_220px]">
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Buscar videos</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input 
+        matInput 
+        type="search" 
+        [(ngModel)]="textoBusqueda"
+        placeholder="Escribe el título del video">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Categoría</mat-label>
+      <mat-select [(ngModel)]="categoriaSeleccionada">
+        <mat-option value="todos">Todas</mat-option>
+        <mat-option value="programacion">Programación</mat-option>
+        <mat-option value="devops">DevOps</mat-option>
+        <mat-option value="base-datos">Base de datos</mat-option>
+        <mat-option value="diseno">Diseño</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+  </section>
+
+  <!-- GALERÍA DE VIDEOS -->
+  <section class="mb-5 flex items-center justify-between">
+    <h2 class="text-xl font-bold text-slate-800">
+      Galería de Videos ({{ videosFiltrados.length }})
+    </h2>
+  </section>
+
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <mat-card *ngFor="let video of videosFiltrados" appearance="outlined" class="overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+      
+      <!-- Miniatura -->
+      <div class="relative h-44 bg-slate-900 group">
+        <img [src]="video.miniatura" [alt]="video.titulo" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition">
+        
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-12 h-12 bg-blue-600/90 text-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+            <mat-icon>play_arrow</mat-icon>
+          </div>
+        </div>
+
+        <span class="absolute bottom-2 right-2 bg-slate-950/80 text-white text-xs font-semibold px-2 py-0.5 rounded backdrop-blur-sm">
+          {{ video.duracion }}
+        </span>
+      </div>
+
+      <!-- Información del Video -->
+      <mat-card-content class="p-4">
+        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">{{ video.categoria }}</span>
+        <h3 class="text-sm font-bold text-slate-900 mt-1 line-clamp-2 leading-snug">{{ video.titulo }}</h3>
+      </mat-card-content>
+
+    </mat-card>
+  </div>
+
+  <!-- Estado sin resultados -->
+  <div *ngIf="videosFiltrados.length === 0" class="text-center py-12 text-slate-500">
+    <mat-icon class="!w-12 !h-12 !text-5xl text-slate-400 mb-2">videocam_off</mat-icon>
+    <p class="font-medium">No se encontraron videos en esta categoría o búsqueda.</p>
+  </div>
+
+</div>

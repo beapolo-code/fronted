@@ -1,0 +1,196 @@
+<div class="min-h-screen bg-[#0b0f19] text-slate-100 p-6 md:p-8 font-sans">
+  
+  <!-- ENCABEZADO -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <div class="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        Sistema de Gestión de Biblioteca
+      </div>
+      
+      <!-- Título con botón de flecha de regreso -->
+      <div class="flex items-center gap-3">
+        <button 
+          *ngIf="categoriaSeleccionada"
+          (click)="volverACategorias()"
+          title="Regresar a categorías"
+          class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-cyan-400 border border-slate-700 transition-all flex items-center justify-center shadow-md active:scale-95">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </button>
+
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">
+          {{ categoriaSeleccionada ? categoriaSeleccionada.nombre : 'Catálogo de Categorías' }}
+        </h1>
+      </div>
+
+      <p class="text-slate-400 text-sm mt-1">
+        {{ categoriaSeleccionada ? 'Ejemplares pertenecientes a esta sección.' : 'Selecciona una categoría para explorar sus libros.' }}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Botón de texto alternativo con flecha -->
+      <button 
+        *ngIf="categoriaSeleccionada"
+        (click)="volverACategorias()"
+        class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl transition-all border border-slate-700 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Volver
+      </button>
+
+      <button 
+        (click)="mostrarModal = true"
+        class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Registrar Nuevo Libro
+      </button>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS GENERALES -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+    <div class="bg-[#13192b] border border-slate-800/80 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total en Catálogo</span>
+        <div class="text-3xl font-black text-white mt-1">{{ libros.length }}</div>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-indigo-950/60 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      </div>
+    </div>
+
+    <div class="bg-[#13192b] border border-slate-800/80 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Disponibles</span>
+        <div class="text-3xl font-black text-emerald-400 mt-1">{{ totalDisponibles }}</div>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>
+
+    <div class="bg-[#13192b] border border-slate-800/80 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+      <div>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">En Préstamo</span>
+        <div class="text-3xl font-black text-amber-500 mt-1">{{ totalPrestados }}</div>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA 1: TARJETAS DE CATEGORÍAS (PRINCIPAL) -->
+  <div *ngIf="!categoriaSeleccionada" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <div 
+      *ngFor="let cat of categorias"
+      (click)="seleccionarCategoria(cat)"
+      class="bg-[#13192b] border border-slate-800 rounded-2xl overflow-hidden shadow-xl cursor-pointer hover:border-cyan-500/50 transition-all transform hover:-translate-y-1 flex flex-col justify-between group">
+      
+      <div class="relative h-64 overflow-hidden bg-slate-900">
+        <img [src]="'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600'" [alt]="cat.nombre" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        <span class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-cyan-400 text-xs font-extrabold px-3 py-1 rounded-full border border-slate-700">
+          {{ obtenerCantidadLibros(cat.id) }} Libros
+        </span>
+      </div>
+
+      <div class="p-4 bg-[#13192b]">
+        <h3 class="font-black text-white text-lg tracking-wider uppercase text-center group-hover:text-cyan-400 transition-colors">
+          {{ cat.nombre }}
+        </h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA 2: SUBDIVISIÓN CON LOS LIBROS DE LA CATEGORÍA SELECCIONADA -->
+  <div *ngIf="categoriaSeleccionada">
+    <div class="relative mb-6">
+      <input 
+        type="text" 
+        [(ngModel)]="busqueda"
+        placeholder="Buscar por título o autor..." 
+        class="w-full bg-[#13192b] border border-slate-800/80 rounded-2xl px-5 py-3.5 pl-12 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+      />
+      <svg class="w-5 h-5 text-slate-500 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+
+    <div *ngIf="librosFiltrados.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div *ngFor="let libro of librosFiltrados" class="bg-[#13192b] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between group">
+        <div class="relative h-64 overflow-hidden bg-slate-900">
+          <img [src]="libro.imagen" [alt]="libro.titulo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          
+          <button 
+            (click)="alternarEstado(libro)"
+            [ngClass]="{
+              'bg-emerald-500/80 text-emerald-950 font-extrabold': libro.estado === 'Disponible',
+              'bg-amber-500/80 text-amber-950 font-extrabold': libro.estado === 'Prestado'
+            }" 
+            class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs shadow-lg backdrop-blur-md">
+            {{ libro.estado }}
+          </button>
+
+          <button 
+            (click)="eliminarLibro(libro.id)" 
+            class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+
+        <div class="p-4 flex-1 flex flex-col justify-between">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-cyan-400 block mb-1">
+              {{ libro.categoria }}
+            </span>
+            <h3 class="font-bold text-slate-100 text-base leading-snug line-clamp-1">{{ libro.titulo }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Por {{ libro.autor }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="librosFiltrados.length === 0" class="text-center py-16 bg-[#13192b] border border-slate-800 rounded-3xl">
+      <p class="text-slate-400 font-medium">No hay libros registrados en la categoría {{ categoriaSeleccionada.nombre }}.</p>
+    </div>
+  </div>
+
+  <!-- MODAL NUEVO LIBRO -->
+  <div *ngIf="mostrarModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#13192b] border border-slate-700/80 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+      <h2 class="text-xl font-extrabold text-white border-b border-slate-800 pb-3">Registrar Nuevo Libro</h2>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Título del Libro</label>
+          <input type="text" [(ngModel)]="nuevoTitulo" placeholder="Ej: Gastronomía Peruana" class="w-full bg-[#0b0f19] border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Autor</label>
+          <input type="text" [(ngModel)]="nuevoAutor" placeholder="Ej: Gastón Acurio" class="w-full bg-[#0b0f19] border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Categoría</label>
+          <select 
+            [(ngModel)]="nuevaCategoria" 
+            class="w-full bg-[#0b0f19] border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <option *ngFor="let cat of categorias" [value]="cat.id">
+              {{ cat.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">URL de la Imagen de Portada</label>
+          <input type="text" [(ngModel)]="nuevaImagen" placeholder="https://..." class="w-full bg-[#0b0f19] border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+        <button (click)="mostrarModal = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm font-bold transition-colors">Cancelar</button>
+        <button (click)="guardarLibro()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-cyan-500/20">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+</div>

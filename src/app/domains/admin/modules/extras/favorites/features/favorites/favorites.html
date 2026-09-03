@@ -1,0 +1,230 @@
+<div class="min-h-screen bg-gray-50 p-6">
+
+    <!-- Encabezado -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            Mis Favoritos
+        </h1>
+
+        <p class="mt-2 text-gray-600">
+            Explora los libros que has guardado en tu biblioteca virtual.
+        </p>
+    </div>
+
+
+    <!-- Buscador -->
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center">
+
+        <mat-form-field
+            appearance="outline"
+            class="w-full md:w-96"
+        >
+
+            <mat-label>
+                Buscar libro
+            </mat-label>
+
+            <input
+                matInput
+                [(ngModel)]="search"
+                placeholder="Título o autor"
+            />
+
+            <mat-icon matSuffix>
+                search
+            </mat-icon>
+
+        </mat-form-field>
+
+    </div>
+
+
+    <!-- Categorías -->
+    <div class="mb-8 flex flex-wrap gap-2">
+
+        @for (category of categories; track category) {
+
+            <button
+                mat-stroked-button
+                (click)="selectCategory(category)"
+            >
+
+                @if (category === 'Todos') {
+                    <mat-icon>
+                        library_books
+                    </mat-icon>
+                }
+
+                @if (category === 'Diseño de Modas') {
+                    <mat-icon>
+                        checkroom
+                    </mat-icon>
+                }
+
+                @if (category === 'Desarrollo de Software') {
+                    <mat-icon>
+                        code
+                    </mat-icon>
+                }
+
+                @if (category === 'Marketing Digital') {
+                    <mat-icon>
+                        campaign
+                    </mat-icon>
+                }
+
+                @if (category === 'Arte Culinario') {
+                    <mat-icon>
+                        restaurant
+                    </mat-icon>
+                }
+
+                {{ category }}
+
+            </button>
+
+        }
+
+    </div>
+
+
+    <!-- Cantidad de libros -->
+    <div class="mb-6">
+
+        <p class="text-sm text-gray-600">
+            {{ filteredBooks.length }} libros encontrados
+        </p>
+
+    </div>
+
+
+    <!-- Tarjetas -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        @for (book of filteredBooks; track book.title) {
+
+            <mat-card
+                class="overflow-hidden transition-shadow hover:shadow-xl"
+            >
+
+                <!-- Portada -->
+                <div class="aspect-[3/4] overflow-hidden bg-gray-200">
+
+                    <img
+                        [src]="getCover(book.isbn)"
+                        [alt]="'Portada de ' + book.title"
+                        class="h-full w-full object-cover"
+                    />
+
+                </div>
+
+
+                <!-- Información -->
+                <mat-card-content class="p-5">
+
+                    <!-- Categoría -->
+                    <div class="mb-3">
+
+                        <span
+                            class="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700"
+                        >
+                            {{ book.category }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Título -->
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        {{ book.title }}
+                    </h2>
+
+
+                    <!-- Autor -->
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ book.author }}
+                    </p>
+
+
+                    <!-- Año -->
+                    <p class="mt-1 text-sm text-gray-500">
+                        Año: {{ book.year }}
+                    </p>
+
+                </mat-card-content>
+
+
+                <!-- Acciones -->
+                <mat-card-actions
+                    class="flex items-center justify-between px-5 pb-5"
+                >
+
+                    <!-- Abrir libro -->
+                    <button
+                        mat-flat-button
+                        color="primary"
+                        (click)="openBook(book)"
+                    >
+
+                        <mat-icon>
+                            menu_book
+                        </mat-icon>
+
+                        Abrir libro
+
+                    </button>
+
+
+                    <!-- Favorito -->
+                    <button
+                        mat-icon-button
+                        [attr.aria-label]="book.favorite
+                            ? 'Quitar de favoritos'
+                            : 'Agregar a favoritos'"
+                        (click)="toggleFavorite(book)"
+                    >
+
+                        <mat-icon>
+                            {{ book.favorite
+                                ? 'favorite'
+                                : 'favorite_border'
+                            }}
+                        </mat-icon>
+
+                    </button>
+
+                </mat-card-actions>
+
+            </mat-card>
+
+        }
+
+    </div>
+
+
+    <!-- Sin resultados -->
+    @if (filteredBooks.length === 0) {
+
+        <div
+            class="flex flex-col items-center justify-center py-16 text-center"
+        >
+
+            <mat-icon
+                class="mb-4 !h-12 !w-12 !text-5xl text-gray-400"
+            >
+                search_off
+            </mat-icon>
+
+            <h2 class="text-xl font-semibold text-gray-700">
+                No encontramos libros
+            </h2>
+
+            <p class="mt-2 text-gray-500">
+                Intenta buscar otro título, autor o categoría.
+            </p>
+
+        </div>
+
+    }
+
+</div>

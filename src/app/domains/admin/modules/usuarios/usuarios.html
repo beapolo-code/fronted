@@ -1,0 +1,410 @@
+<div class="flex h-full w-full flex-auto flex-col overflow-hidden">
+  <!-- Encabezado -->
+  <div
+    class="flex flex-col gap-5 border-b bg-white px-6 py-6 sm:flex-row sm:items-center lg:px-8 dark:bg-neutral-900"
+  >
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">
+        Gestión de usuarios
+      </h1>
+
+      <p class="mt-1 text-sm text-neutral-500">
+        Administra los usuarios registrados en el sistema
+      </p>
+    </div>
+
+    <div class="flex-auto"></div>
+
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="abrirFormulario()"
+    >
+      <mat-icon svgIcon="user-plus"></mat-icon>
+      Nuevo usuario
+    </button>
+  </div>
+
+  <!-- Resumen -->
+  <div
+    class="grid grid-cols-1 gap-4 border-b bg-neutral-50 px-6 py-5 sm:grid-cols-3 lg:px-8 dark:bg-neutral-950"
+  >
+    <div class="rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
+      <p class="text-sm text-neutral-500">Total de usuarios</p>
+
+      <p class="mt-2 text-3xl font-semibold">
+        {{ totalUsuarios() }}
+      </p>
+    </div>
+
+    <div class="rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
+      <p class="text-sm text-neutral-500">Usuarios activos</p>
+
+      <p class="mt-2 text-3xl font-semibold text-green-600">
+        {{ totalActivos() }}
+      </p>
+    </div>
+
+    <div class="rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
+      <p class="text-sm text-neutral-500">Usuarios inactivos</p>
+
+      <p class="mt-2 text-3xl font-semibold text-red-600">
+        {{ totalInactivos() }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  @if (mostrarFormulario()) {
+    <div class="border-b bg-white px-6 py-6 lg:px-8 dark:bg-neutral-900">
+      <div class="mx-auto max-w-6xl rounded-xl border p-6 shadow-sm">
+        <div class="mb-6 flex items-center">
+          <div>
+            <h2 class="text-xl font-semibold">
+              {{ tituloFormulario() }}
+            </h2>
+
+            <p class="mt-1 text-sm text-neutral-500">
+              Completa la información del usuario
+            </p>
+          </div>
+
+          <div class="flex-auto"></div>
+
+          <button
+            mat-icon-button
+            matTooltip="Cerrar formulario"
+            (click)="cerrarFormulario()"
+          >
+            <mat-icon svgIcon="x"></mat-icon>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-x-5 md:grid-cols-2 lg:grid-cols-3">
+          <!-- Código temporal -->
+          <mat-form-field class="w-full">
+            <mat-label>Código temporal</mat-label>
+
+            <mat-icon matPrefix svgIcon="hash"></mat-icon>
+
+            <input
+              matInput
+              placeholder="Ej. USR-004"
+              [value]="formulario().id_temp"
+              (input)="actualizarTexto('id_temp', $event)"
+            />
+          </mat-form-field>
+
+          <!-- Nombre -->
+          <mat-form-field class="w-full">
+            <mat-label>Nombre completo</mat-label>
+
+            <mat-icon matPrefix svgIcon="user"></mat-icon>
+
+            <input
+              matInput
+              placeholder="Ej. Alexander García"
+              [value]="formulario().name"
+              (input)="actualizarTexto('name', $event)"
+              required
+            />
+          </mat-form-field>
+
+          <!-- Correo -->
+          <mat-form-field class="w-full">
+            <mat-label>Correo electrónico</mat-label>
+
+            <mat-icon matPrefix svgIcon="mail"></mat-icon>
+
+            <input
+              matInput
+              type="email"
+              placeholder="usuario@correo.com"
+              [value]="formulario().email"
+              (input)="actualizarTexto('email', $event)"
+              required
+            />
+          </mat-form-field>
+
+          <!-- Contraseña -->
+          <mat-form-field class="w-full">
+            <mat-label>
+              {{
+                usuarioEditandoId()
+                  ? 'Nueva contraseña (opcional)'
+                  : 'Contraseña'
+              }}
+            </mat-label>
+
+            <mat-icon matPrefix svgIcon="lock-keyhole"></mat-icon>
+
+            <input
+              matInput
+              type="password"
+              placeholder="Ingrese una contraseña"
+              [value]="formulario().password"
+              (input)="actualizarTexto('password', $event)"
+            />
+
+            @if (usuarioEditandoId()) {
+              <mat-hint>
+                Déjala vacía para conservar la contraseña.
+              </mat-hint>
+            }
+          </mat-form-field>
+
+          <!-- Rol -->
+          <mat-form-field class="w-full">
+            <mat-label>Rol del usuario</mat-label>
+
+            <mat-icon matPrefix svgIcon="shield-check"></mat-icon>
+
+            <select
+              matNativeControl
+              [value]="formulario().role"
+              (change)="actualizarRol($event)"
+            >
+              <option value="user">Usuario</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </mat-form-field>
+
+          <!-- Estado -->
+          <div
+            class="mb-5 flex min-h-14 items-center justify-between rounded-lg border px-4"
+          >
+            <div>
+              <p class="font-medium">Estado del usuario</p>
+
+              <p class="text-sm text-neutral-500">
+                {{
+                  formulario().is_active
+                    ? 'Usuario activo'
+                    : 'Usuario inactivo'
+                }}
+              </p>
+            </div>
+
+            <mat-slide-toggle
+              [checked]="formulario().is_active"
+              (change)="actualizarEstado($event.checked)"
+            ></mat-slide-toggle>
+          </div>
+        </div>
+
+        @if (mensaje()) {
+          <div
+            class="mb-5 rounded-lg bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-200"
+          >
+            {{ mensaje() }}
+          </div>
+        }
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="guardarUsuario()"
+          >
+            <mat-icon
+              [svgIcon]="usuarioEditandoId() ? 'save' : 'user-plus'"
+            ></mat-icon>
+
+            {{
+              usuarioEditandoId()
+                ? 'Guardar cambios'
+                : 'Registrar usuario'
+            }}
+          </button>
+
+          <button
+            mat-stroked-button
+            (click)="cerrarFormulario()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Buscador -->
+  <div
+    class="flex flex-col gap-4 border-b bg-white px-6 py-5 sm:flex-row sm:items-center lg:px-8 dark:bg-neutral-900"
+  >
+    <div>
+      <h2 class="text-lg font-semibold">Usuarios registrados</h2>
+
+      <p class="text-sm text-neutral-500">
+        {{ usuariosFiltrados().length }} resultados
+      </p>
+    </div>
+
+    <div class="flex-auto"></div>
+
+    <mat-form-field class="w-full sm:w-80">
+      <mat-label>Buscar usuario</mat-label>
+
+      <mat-icon matPrefix svgIcon="search"></mat-icon>
+
+      <input
+        matInput
+        placeholder="Nombre, correo, código o rol"
+        [value]="busqueda()"
+        (input)="buscar($event)"
+      />
+    </mat-form-field>
+  </div>
+
+  <!-- Tabla -->
+  <div class="flex-auto overflow-auto bg-white dark:bg-neutral-900">
+    @if (usuariosFiltrados().length > 0) {
+      <table
+        mat-table
+        [dataSource]="usuariosFiltrados()"
+        [trackBy]="trackById"
+        class="w-full whitespace-nowrap"
+      >
+        <ng-container matColumnDef="id_temp">
+          <th mat-header-cell *matHeaderCellDef>Código</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            {{ usuario.id_temp || 'Sin código' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Usuario</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex size-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+              >
+                {{ usuario.name.charAt(0) }}
+              </div>
+
+              <div>
+                <p class="font-medium">{{ usuario.name }}</p>
+
+                <p class="max-w-40 truncate text-xs text-neutral-500">
+                  {{ usuario.id }}
+                </p>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Correo</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            {{ usuario.email }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Rol</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            <span
+              class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+            >
+              {{ usuario.role === 'admin' ? 'Administrador' : 'Usuario' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="is_active">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            @if (usuario.is_active) {
+              <span
+                class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-900 dark:text-green-200"
+              >
+                Activo
+              </span>
+            } @else {
+              <span
+                class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-900 dark:text-red-200"
+              >
+                Inactivo
+              </span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="created_at">
+          <th mat-header-cell *matHeaderCellDef>Fecha de creación</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            {{ usuario.created_at | date: 'dd/MM/yyyy HH:mm' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+
+          <td mat-cell *matCellDef="let usuario">
+            <div class="flex items-center">
+              <button
+                mat-icon-button
+                matTooltip="Editar usuario"
+                (click)="editarUsuario(usuario)"
+              >
+                <mat-icon svgIcon="pencil"></mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                [matTooltip]="
+                  usuario.is_active
+                    ? 'Desactivar usuario'
+                    : 'Activar usuario'
+                "
+                (click)="cambiarEstado(usuario.id)"
+              >
+                <mat-icon
+                  [svgIcon]="
+                    usuario.is_active ? 'user-x' : 'user-check'
+                  "
+                ></mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                matTooltip="Eliminar usuario"
+                (click)="eliminarUsuario(usuario.id)"
+              >
+                <mat-icon svgIcon="trash-2"></mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+
+        <tr
+          mat-row
+          *matRowDef="let usuario; columns: columnas"
+          class="hover:bg-neutral-50 dark:hover:bg-neutral-800"
+        ></tr>
+      </table>
+    } @else {
+      <div
+        class="flex h-80 flex-col items-center justify-center px-6 text-center"
+      >
+        <mat-icon class="mb-4" svgIcon="search-x"></mat-icon>
+
+        <h2 class="text-lg font-semibold">
+          No se encontraron usuarios
+        </h2>
+
+        <p class="mt-1 text-neutral-500">
+          Prueba con otro nombre, correo, código o rol.
+        </p>
+      </div>
+    }
+  </div>
+</div>
