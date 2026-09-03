@@ -96,12 +96,12 @@ export class BookManagementComponent implements OnInit {
       };
 
       this.libroService.crearLibro(payload).subscribe({
-        next: (libroCreado) => {
-          this.libros.unshift(libroCreado);
+        next: () => {
           this.nuevoTitulo = '';
           this.nuevoAutor = '';
           this.nuevaImagen = '';
           this.mostrarModal = false;
+          this.cargarLibros();
         },
         error: (err) => console.error('Error al guardar:', err)
       });
@@ -111,7 +111,7 @@ export class BookManagementComponent implements OnInit {
   eliminarLibro(id: number | string): void {
     this.libroService.eliminarLibro(id).subscribe({
       next: () => {
-        this.libros = this.libros.filter(l => l.id !== id);
+        this.cargarLibros();
       },
       error: (err) => console.error('Error al eliminar:', err)
     });
