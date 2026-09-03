@@ -15,8 +15,8 @@
                         Biblioteca multimedia
                     </span>
 
-<h1 class="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
-                        Administraci�n de videos
+<h1 class="text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-4xl">
+                        Administración de videos
                     </h1>
 
                     <p class="mt-2 text-slate-500">
@@ -146,19 +146,19 @@
 
                 <!-- SELECCIÓN DEL ARCHIVO -->
                 <div
-                    class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center transition hover:border-primary"
+                    class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center transition hover:border-primary dark:border-neutral-700 dark:bg-neutral-800/40"
                 >
                     <mat-icon
-                        class="mb-3 !h-14 !w-14 !text-5xl text-slate-400"
+                        class="mb-3 !h-14 !w-14 !text-5xl text-slate-400 dark:text-neutral-400"
                     >
                         cloud_upload
                     </mat-icon>
 
-                    <h3 class="text-lg font-bold text-slate-800">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white">
                         Selecciona un archivo de video
                     </h3>
 
-                    <p class="mt-2 text-sm text-slate-500">
+                    <p class="mt-2 text-sm text-slate-500 dark:text-neutral-400">
                         Formatos permitidos: MP4, WebM y OGG. Tamaño máximo:
                         200 MB.
                     </p>
@@ -305,12 +305,12 @@
                         {{ videoSeleccionado.categoria }}
                     </span>
 
-                    <p class="mt-2 text-slate-600">
+                    <p class="mt-2 text-slate-600 dark:text-neutral-400">
                         {{ videoSeleccionado.descripcion }}
                     </p>
 
                     <p
-                        class="mt-2 flex items-center gap-2 text-sm text-slate-500"
+                        class="mt-2 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400"
                     >
                         <mat-icon class="!h-5 !w-5 !text-xl">
                             schedule
@@ -326,7 +326,7 @@
 
         <!-- BUSCADOR Y FILTROS -->
         <section
-            class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_250px_auto]"
+            class="mb-8 grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1fr)_250px_auto]"
         >
 
             <!-- BUSCADOR -->
@@ -425,11 +425,11 @@
         <section class="mb-5 flex items-center justify-between gap-4">
 
             <div>
-                <h2 class="text-xl font-bold text-slate-800">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-white">
                     Galería de videos
                 </h2>
 
-                <p class="mt-1 text-sm text-slate-500">
+                <p class="mt-1 text-sm text-slate-500 dark:text-neutral-400">
                     {{ videosFiltrados.length }}
 
                     {{
@@ -474,13 +474,11 @@
                     <div
                         class="absolute inset-0 flex items-center justify-center bg-slate-950/20 transition group-hover:bg-slate-950/40"
                     >
-                        <div
-                            class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600/95 text-white shadow-xl transition duration-200 group-hover:scale-110"
+                        <mat-icon
+                            class="pointer-events-none text-white text-4xl drop-shadow-xl"
                         >
-                            <mat-icon class="!h-8 !w-8 !text-3xl">
-                                play_arrow
-                            </mat-icon>
-                        </div>
+                            play_circle_filled
+                        </mat-icon>
                     </div>
 
                     <!-- DURACIÓN -->
@@ -510,12 +508,12 @@
                     </span>
 
                     <h3
-                        class="line-clamp-2 text-base font-bold leading-snug text-slate-900"
+                        class="line-clamp-2 text-base font-bold leading-snug text-slate-900 dark:text-white"
                     >
                         {{ video.titulo }}
                     </h3>
 
-                    <p class="mt-2 line-clamp-2 text-sm text-slate-500">
+                    <p class="mt-2 line-clamp-2 text-sm text-slate-500 dark:text-neutral-400">
                         {{ video.descripcion }}
                     </p>
 
@@ -561,19 +559,19 @@
         <!-- SIN RESULTADOS -->
         <div
             *ngIf="videosFiltrados.length === 0"
-            class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"
+            class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center dark:border-neutral-700 dark:bg-neutral-800/40"
         >
             <mat-icon
-                class="mb-4 !h-16 !w-16 !text-6xl text-slate-400"
+                class="mb-4 !h-16 !w-16 !text-6xl text-slate-400 dark:text-neutral-400"
             >
                 videocam_off
             </mat-icon>
 
-            <h3 class="text-xl font-bold text-slate-800">
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white">
                 No se encontraron videos
             </h3>
 
-            <p class="mx-auto mt-2 max-w-md text-slate-500">
+            <p class="mx-auto mt-2 max-w-md text-slate-500 dark:text-neutral-400">
                 No existen videos que coincidan con la búsqueda o categoría
                 seleccionada.
             </p>
