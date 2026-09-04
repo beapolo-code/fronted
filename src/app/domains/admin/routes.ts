@@ -44,6 +44,13 @@ export const ADMIN_ROUTES: Routes = [
 					),
 			},
 			{
+				path: 'pages/categories',
+				loadComponent: () =>
+					import('../../pages/my-component/my-component').then(
+						(m) => m.MyComponent
+					),
+			},
+			{
 				path: 'usuarios',
 				loadChildren: () => import('./modules/usuarios/routes'),
 			},

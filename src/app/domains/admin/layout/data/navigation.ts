@@ -158,6 +158,13 @@ export const NAVIGATION: NavigationItem[] = [
         activeOptions: { exact: false },
       },
       {
+        id: 'biblioteca/categories',
+        label: 'Categorías',
+        icon: 'category',
+        route: '/admin/pages/categories',
+        activeOptions: { exact: false },
+      },
+      {
         id: 'biblioteca/usuarios',
         label: 'Usuarios',
         icon: 'users',
