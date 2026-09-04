@@ -258,7 +258,15 @@
 
   <!-- Tabla -->
   <div class="flex-auto overflow-auto bg-white dark:bg-neutral-900">
-    @if (usuariosFiltrados().length > 0) {
+    @if (cargando()) {
+      <div
+        class="flex h-80 flex-col items-center justify-center px-6 text-center"
+      >
+        <mat-icon class="mb-4" svgIcon="loader-circle"></mat-icon>
+
+        <p class="text-neutral-500">Cargando usuarios...</p>
+      </div>
+    } @else if (usuariosFiltrados().length > 0) {
       <table
         mat-table
         [dataSource]="usuariosFiltrados()"

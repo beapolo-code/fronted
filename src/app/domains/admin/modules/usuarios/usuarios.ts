@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 // Angular Material
 import { MatButtonModule } from '@angular/material/button';
@@ -11,16 +11,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-interface Usuario {
-  id: string;
-  id_temp: string | null;
-  email: string;
-  password_hash: string | null;
-  name: string;
-  role: 'admin' | 'user';
-  is_active: boolean;
-  created_at: Date;
-}
+import { UsersService, Usuario } from './usuarios.service';
 
 interface FormularioUsuario {
   id_temp: string;
@@ -57,6 +48,8 @@ const FORMULARIO_INICIAL: FormularioUsuario = {
   templateUrl: './usuarios.html',
 })
 export class UsuariosComponent {
+  private readonly usersService = inject(UsersService);
+
   readonly busqueda = signal('');
   readonly mostrarFormulario = signal(false);
   readonly usuarioEditandoId = signal<string | null>(null);
@@ -64,6 +57,7 @@ export class UsuariosComponent {
   readonly formulario = signal<FormularioUsuario>({
     ...FORMULARIO_INICIAL,
   });
+  readonly cargando = signal(false);
 
   readonly columnas: string[] = [
     'id_temp',
@@ -75,38 +69,7 @@ export class UsuariosComponent {
     'acciones',
   ];
 
-  readonly usuarios = signal<Usuario[]>([
-    {
-      id: '11fe4567-e89b-12d3-a456-426614174000',
-      id_temp: 'USR-001',
-      email: 'alexander6621@gmail.com',
-      password_hash: 'hash_simulado_1',
-      name: 'Alexander García',
-      role: 'admin',
-      is_active: true,
-      created_at: new Date('2026-08-30T10:30:00'),
-    },
-    {
-      id: '22fe4567-e89b-12d3-a456-426614174001',
-      id_temp: 'USR-002',
-      email: 'mlopez@dominio.com',
-      password_hash: 'hash_simulado_2',
-      name: 'María López',
-      role: 'user',
-      is_active: true,
-      created_at: new Date('2026-08-31T14:20:00'),
-    },
-    {
-      id: '33fe4567-e89b-12d3-a456-426614174002',
-      id_temp: 'USR-003',
-      email: 'cruiz@dominio.com',
-      password_hash: 'hash_simulado_3',
-      name: 'Carlos Ruiz',
-      role: 'user',
-      is_active: false,
-      created_at: new Date('2026-09-01T09:15:00'),
-    },
-  ]);
+  readonly usuarios = signal<Usuario[]>([]);
 
   readonly usuariosFiltrados = computed(() => {
     const texto = this.busqueda().toLowerCase().trim();
@@ -139,6 +102,19 @@ export class UsuariosComponent {
   readonly tituloFormulario = computed(() =>
     this.usuarioEditandoId() ? 'Editar usuario' : 'Registrar nuevo usuario'
   );
+
+  async ngOnInit(): Promise<void> {
+    await this.cargarUsuarios();
+  }
+
+  async cargarUsuarios(): Promise<void> {
+    this.cargando.set(true);
+    try {
+      this.usuarios.set(await this.usersService.findAll());
+    } finally {
+      this.cargando.set(false);
+    }
+  }
 
   buscar(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -187,7 +163,7 @@ export class UsuariosComponent {
     }));
   }
 
-  guardarUsuario(): void {
+  async guardarUsuario(): Promise<void> {
     const datos = this.formulario();
     const editandoId = this.usuarioEditandoId();
 
@@ -201,71 +177,48 @@ export class UsuariosComponent {
       return;
     }
 
-    const correoRepetido = this.usuarios().some(
-      (usuario) =>
-        usuario.email.toLowerCase() === datos.email.toLowerCase().trim() &&
-        usuario.id !== editandoId
-    );
+    try {
+      if (editandoId) {
+        await this.usersService.update(editandoId, {
+          id_temp: datos.id_temp.trim(),
+          name: datos.name.trim(),
+          email: datos.email.trim(),
+          password: datos.password.trim() || undefined,
+          role: datos.role,
+          is_active: datos.is_active,
+        });
+        this.mensaje.set('Usuario actualizado correctamente.');
+      } else {
+        if (!datos.password.trim()) {
+          this.mensaje.set('La contraseña es obligatoria para un usuario nuevo.');
+          return;
+        }
 
-    if (correoRepetido) {
-      this.mensaje.set('El correo electrónico ya está registrado.');
-      return;
-    }
+        await this.usersService.create({
+          id_temp: datos.id_temp.trim() || undefined,
+          name: datos.name.trim(),
+          email: datos.email.trim(),
+          password: datos.password.trim(),
+          role: datos.role,
+          is_active: datos.is_active,
+        });
+        this.mensaje.set('Usuario registrado correctamente.');
+      }
 
-    if (!editandoId && !datos.password.trim()) {
-      this.mensaje.set('La contraseña es obligatoria para un usuario nuevo.');
-      return;
-    }
+      await this.cargarUsuarios();
+      this.usuarioEditandoId.set(null);
+      this.formulario.set({ ...FORMULARIO_INICIAL });
 
-    if (editandoId) {
-      this.usuarios.update((usuarios) =>
-        usuarios.map((usuario) => {
-          if (usuario.id !== editandoId) {
-            return usuario;
-          }
-
-          return {
-            ...usuario,
-            id_temp: datos.id_temp.trim() || null,
-            email: datos.email.trim(),
-            password_hash: datos.password.trim()
-              ? 'hash_simulado_actualizado'
-              : usuario.password_hash,
-            name: datos.name.trim(),
-            role: datos.role,
-            is_active: datos.is_active,
-          };
-        })
+      setTimeout(() => {
+        this.mostrarFormulario.set(false);
+        this.mensaje.set('');
+      }, 1000);
+    } catch (error: unknown) {
+      this.mensaje.set(
+        (error as { error?: { message?: string } })?.error?.message ??
+          'No se pudo guardar el usuario.'
       );
-
-      this.mensaje.set('Usuario actualizado correctamente.');
-    } else {
-      const nuevoUsuario: Usuario = {
-        id: crypto.randomUUID(),
-        id_temp: datos.id_temp.trim() || null,
-        email: datos.email.trim(),
-        password_hash: 'hash_simulado_frontend',
-        name: datos.name.trim(),
-        role: datos.role,
-        is_active: datos.is_active,
-        created_at: new Date(),
-      };
-
-      this.usuarios.update((usuarios) => [
-        nuevoUsuario,
-        ...usuarios,
-      ]);
-
-      this.mensaje.set('Usuario registrado correctamente.');
     }
-
-    this.usuarioEditandoId.set(null);
-    this.formulario.set({ ...FORMULARIO_INICIAL });
-
-    setTimeout(() => {
-      this.mostrarFormulario.set(false);
-      this.mensaje.set('');
-    }, 1000);
   }
 
   editarUsuario(usuario: Usuario): void {
@@ -289,23 +242,22 @@ export class UsuariosComponent {
     });
   }
 
-  cambiarEstado(id: string): void {
-    this.usuarios.update((usuarios) =>
-      usuarios.map((usuario) =>
-        usuario.id === id
-          ? {
-              ...usuario,
-              is_active: !usuario.is_active,
-            }
-          : usuario
-      )
-    );
+  async cambiarEstado(id: string): Promise<void> {
+    const usuario = this.usuarios().find((item) => item.id === id);
+    if (!usuario) {
+      return;
+    }
+
+    try {
+      await this.usersService.setActive(id, !usuario.is_active);
+      await this.cargarUsuarios();
+    } catch {
+      this.mensaje.set('No se pudo cambiar el estado del usuario.');
+    }
   }
 
-  eliminarUsuario(id: string): void {
-    const usuario = this.usuarios().find(
-      (item) => item.id === id
-    );
+  async eliminarUsuario(id: string): Promise<void> {
+    const usuario = this.usuarios().find((item) => item.id === id);
 
     if (!usuario) {
       return;
@@ -319,9 +271,12 @@ export class UsuariosComponent {
       return;
     }
 
-    this.usuarios.update((usuarios) =>
-      usuarios.filter((item) => item.id !== id)
-    );
+    try {
+      await this.usersService.remove(id);
+      await this.cargarUsuarios();
+    } catch {
+      this.mensaje.set('No se pudo eliminar el usuario.');
+    }
   }
 
   trackById(index: number, usuario: Usuario): string {
