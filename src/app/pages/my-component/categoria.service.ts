@@ -6,6 +6,9 @@ export interface CategoriaApi {
   id: string;
   nombre: string;
   descripcion: string;
+  code: string;
+  enabled: boolean;
+  type: string;
 }
 
 interface Envelope<T> {

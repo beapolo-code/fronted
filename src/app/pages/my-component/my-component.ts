@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { CategoriaService } from './categoria.service';
+import { CategoriaService, CategoriaApi } from './categoria.service';
 
 @Component({
 	selector: 'app-my-component',
@@ -28,7 +28,7 @@ export class MyComponent implements OnInit {
 	private platformId = inject(PLATFORM_ID);
 	private router = inject(Router);
 
-	categories = signal<string[]>([]);
+	categories = signal<CategoriaApi[]>([]);
 
 	showForm = signal(false);
 	newCategoryName = signal('');
@@ -43,7 +43,7 @@ export class MyComponent implements OnInit {
 	private cargarCategorias(): void {
 		this.categoriaService.obtenerCategorias().subscribe({
 			next: (cats) => {
-				this.categories.set(cats.map((c) => c.nombre));
+				this.categories.set(cats);
 			},
 			error: (err) => console.error('Error al cargar categorías:', err),
 		});
@@ -80,7 +80,7 @@ export class MyComponent implements OnInit {
 			});
 	}
 
-	goToCategory(category: string): void {
-		this.router.navigate(['/admin/libros-categoria', encodeURIComponent(category)]);
+	goToCategory(category: CategoriaApi): void {
+		this.router.navigate(['/admin/libros-categoria', encodeURIComponent(category.nombre)]);
 	}
 }

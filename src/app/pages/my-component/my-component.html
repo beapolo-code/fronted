@@ -1,97 +1,93 @@
-<div class="@container mx-auto flex w-full max-w-5xl flex-auto flex-col gap-4 p-6 sm:gap-8 lg:px-8 lg:py-10">
+<div class="flex flex-col w-full p-6">
 
-    <!-- ENCABEZADO -->
-    <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <!-- Encabezado Principal -->
+    <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-3xl font-bold leading-tight">
-                Categorías de la Biblioteca
-            </h1>
-
-            <p class="mt-1 text-secondary">
-                Explora las categorías o registra una nueva.
-            </p>
+            <h1 class="text-3xl font-bold">Gestión de Categorías</h1>
+            <p class="text-secondary mt-1">Administra los catálogos de la biblioteca</p>
         </div>
 
-        <button
-            mat-flat-button
-            color="primary"
-            (click)="openForm()"
-        >
-            <mat-icon>add</mat-icon>
-            Nueva categoría
-        </button>
+        @if (!showForm()) {
+            <button mat-flat-button color="primary" (click)="openForm()">
+                <mat-icon class="mr-2">add</mat-icon>
+                Nueva categoría
+            </button>
+        }
     </div>
 
-    <!-- FORMULARIO NUEVA CATEGORÍA -->
+    <!-- Formulario local -->
     @if (showForm()) {
-        <div class="rounded-xl border bg-card p-6 shadow-sm">
-            <h2 class="text-lg font-semibold">
-                Registrar nueva categoría
-            </h2>
+        <div class="p-6 mb-8 border rounded-xl bg-card shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Agregar Nueva Categoría</h2>
 
-            <div class="mt-4 flex flex-col gap-4">
-                <mat-form-field class="w-full">
-                    <mat-label>Nombre de la categoría</mat-label>
+            <div class="flex flex-col gap-4">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Nombre de la Categoría</mat-label>
                     <input
                         matInput
                         [value]="newCategoryName()"
                         (input)="newCategoryName.set($any($event.target).value)"
-                        placeholder="Ej. Historia"
+                        placeholder="Ej. Literatura"
                     />
                 </mat-form-field>
 
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Descripción</mat-label>
-                    <input
+                    <textarea
                         matInput
                         [value]="newCategoryDescription()"
                         (input)="newCategoryDescription.set($any($event.target).value)"
-                        placeholder="Describe la categoría"
-                    />
+                        placeholder="Descripción opcional"
+                    ></textarea>
                 </mat-form-field>
-            </div>
 
-            <div class="mt-4 flex gap-3">
-                <button
-                    mat-flat-button
-                    color="primary"
-                    (click)="addCategory()"
-                >
-                    Guardar
-                </button>
-
-                <button
-                    mat-stroked-button
-                    (click)="cancelForm()"
-                >
-                    Cancelar
-                </button>
+                <div class="flex justify-end gap-3 mt-2">
+                    <button mat-button (click)="cancelForm()">Cancelar</button>
+                    <button mat-flat-button color="primary" (click)="addCategory()">Guardar</button>
+                </div>
             </div>
         </div>
     }
 
-    <!-- VISTA CATEGORÍAS -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        @for (category of categories(); track category) {
-            <div
-                class="flex cursor-pointer flex-col items-start rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-lg"
-                (click)="goToCategory(category)"
-            >
-                <div class="mb-4 flex size-12 items-center justify-center rounded-lg bg-gray-100">
-                    <mat-icon class="!size-8 !text-3xl">
-                        menu_book
-                    </mat-icon>
+    <!-- Lista de Categorías -->
+    @if (categories().length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (category of categories(); track category.id) {
+                <div
+                    class="p-6 rounded-xl border bg-card hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
+                    (click)="goToCategory(category)"
+                >
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+                                <mat-icon class="text-primary">folder</mat-icon>
+                            </div>
+                            @if (category.enabled !== undefined) {
+                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    Activo
+                                </span>
+                            }
+                        </div>
+
+                        <h2 class="text-xl font-semibold mb-2">{{ category.nombre }}</h2>
+                        <p class="text-secondary text-sm line-clamp-2 mb-4">
+                            {{ category.descripcion || 'Sin descripción' }}
+                        </p>
+                    </div>
+
+                    <div class="pt-4 border-t flex items-center justify-between text-xs text-secondary">
+                        <span>Código: {{ category.code || 'N/A' }}</span>
+                        <mat-icon class="text-sm">arrow_forward</mat-icon>
+                    </div>
                 </div>
-
-                <h2 class="text-lg font-semibold">
-                    {{ category }}
-                </h2>
-
-                <p class="mt-1 text-sm text-secondary">
-                    Ver libros de esta categoría
-                </p>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    } @else {
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+            <mat-icon class="text-6xl mb-4 text-secondary">folder_off</mat-icon>
+            <h2 class="text-xl font-semibold">No hay categorías disponibles</h2>
+            <p class="text-secondary mt-1">Registra una nueva categoría mediante el formulario.</p>
+        </div>
+    }
 
 </div>
