@@ -7,11 +7,16 @@ export const ADMIN_ROUTES: Routes = [
 		component: AdminLayout,
 		children: [
 			// Redirect empty path to 'libros-categoria'
-			{ path: '', pathMatch: 'full', redirectTo: 'libros-categoria' },
+			{ path: '', pathMatch: 'full', redirectTo: 'inicio' },
 
 			// -----------------------------------------------------------------------
 			// Custom pages (src/app/pages)
 			// -----------------------------------------------------------------------
+			{
+				path: 'inicio',
+				loadComponent: () =>
+					import('../../pages/inicio/inicio').then((m) => m.Inicio),
+			},
 			{
 				path: 'libros-categoria',
 				redirectTo: 'libros-categoria/General',

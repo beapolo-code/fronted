@@ -130,6 +130,13 @@ export const NAVIGATION: NavigationItem[] = [
     description: 'Módulo de biblioteca del sistema',
     children: [
       {
+        id: 'biblioteca/inicio',
+        label: 'Inicio',
+        icon: 'house',
+        route: '/admin/inicio',
+        activeOptions: { exact: false },
+      },
+      {
         id: 'biblioteca/libros-categoria',
         label: 'Libros por Categoría',
         icon: 'folder-kanban',
