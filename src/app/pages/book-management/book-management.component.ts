@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Libro, Categoria } from './libro.model';
 import { LibroService } from './libro.service';
+import { CategoriaService } from '../my-component/categoria.service';
 
 @Component({
   selector: 'app-book-management',
@@ -12,16 +13,22 @@ import { LibroService } from './libro.service';
 })
 export class BookManagementComponent implements OnInit {
   private libroService = inject(LibroService);
+  private categoriaService = inject(CategoriaService);
   private platformId = inject(PLATFORM_ID);
 
-  categorias: Categoria[] = [
-    { id: 'GASTRONOMÍA', nombre: 'Gastronomía', descripcion: 'Recetas, técnicas culinarias y cocina internacional.', color: 'from-amber-500 to-orange-600' },
-    { id: 'DISEÑO DE MODA', nombre: 'Diseño de Moda', descripcion: 'Tendencias, patronaje e historia de la indumentaria.', color: 'from-pink-500 to-rose-600' },
-    { id: 'TECNOLOGÍA', nombre: 'Tecnología', descripcion: 'Programación, redes, IA y desarrollo de software.', color: 'from-cyan-500 to-blue-600' },
-    { id: 'LITERATURA', nombre: 'Literatura', descripcion: 'Novelas, poesía, obras clásicas y contemporáneas.', color: 'from-purple-500 to-indigo-600' },
-    { id: 'CIENCIA', nombre: 'Ciencia', descripcion: 'Física, biología, química y astronomía.', color: 'from-emerald-500 to-teal-600' },
-    { id: 'HISTORIA', nombre: 'Historia', descripcion: 'Acontecimientos históricos, biografías y civilizaciones.', color: 'from-yellow-500 to-amber-700' }
+  private readonly gradientes = [
+    'from-amber-500 to-orange-600',
+    'from-pink-500 to-rose-600',
+    'from-cyan-500 to-blue-600',
+    'from-purple-500 to-indigo-600',
+    'from-emerald-500 to-teal-600',
+    'from-yellow-500 to-amber-700',
+    'from-sky-500 to-indigo-600',
+    'from-lime-500 to-green-600',
+    'from-fuchsia-500 to-purple-600'
   ];
+
+  categorias: Categoria[] = [];
 
   libros: Libro[] = [];
   cargando = false;
@@ -32,13 +39,28 @@ export class BookManagementComponent implements OnInit {
 
   nuevoTitulo = '';
   nuevoAutor = '';
-  nuevaCategoria = 'GASTRONOMÍA';
+  nuevaCategoria = '';
   nuevaImagen = '';
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarLibros();
+      this.cargarCategorias();
     }
+  }
+
+  cargarCategorias(): void {
+    this.categoriaService.obtenerCategorias().subscribe({
+      next: (cats) => {
+        this.categorias = cats.map((c, i) => ({
+          id: c.nombre,
+          nombre: c.nombre,
+          descripcion: c.descripcion,
+          color: this.gradientes[i % this.gradientes.length]
+        }));
+      },
+      error: (err) => console.error('Error al cargar categorías:', err)
+    });
   }
 
   cargarLibros(): void {
