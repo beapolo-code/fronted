@@ -1,29 +1,21 @@
 import { CommonModule } from '@angular/common';
 import {
     Component,
-    OnDestroy,
-    OnInit
+    OnInit,
+    inject
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
-// Angular Material
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-
-interface Video {
-    id: number;
-    titulo: string;
-    descripcion: string;
-    duracion: string;
-    categoria: string;
-    miniatura: string;
-    archivo: string;
-    temporal?: boolean;
-}
+import {
+    DomSanitizer,
+    SafeResourceUrl
+} from '@angular/platform-browser';
+import { Video, VideosService } from './videos.service';
 
 @Component({
     selector: 'app-videos',
@@ -40,72 +32,30 @@ interface Video {
     ],
     templateUrl: './videos.html'
 })
-export class VideosComponent implements OnInit, OnDestroy {
+export class VideosComponent implements OnInit {
+
+    private readonly videosService = inject(VideosService);
+    private readonly sanitizer = inject(DomSanitizer);
 
     textoBusqueda = '';
     categoriaSeleccionada = 'todos';
     videoSeleccionado: Video | null = null;
 
+    cargando = false;
+    mensajeError = '';
+
     // Formulario
     mostrarFormulario = false;
+    videoEnEdicion: Video | null = null;
     nuevoTitulo = '';
     nuevaDescripcion = '';
     nuevaCategoria = '';
+    nuevoVideoId = '';
 
-    archivoSeleccionado: File | null = null;
-    nombreArchivo = '';
-    duracionArchivo = '00:00';
-    mensajeError = '';
-
-    videos: Video[] = [
-        {
-            id: 1,
-            titulo: 'Curso completo de Angular y Tailwind CSS',
-            descripcion:
-                'Introducción al desarrollo de aplicaciones modernas con Angular y Tailwind CSS.',
-            duracion: 'Calculando...',
-            categoria: 'programacion',
-            miniatura:
-                'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop',
-            archivo: 'videos/angular.mp4'
-        },
-        {
-            id: 2,
-            titulo: 'Introducción a Docker y Kubernetes',
-            descripcion:
-                'Conceptos fundamentales sobre contenedores, Docker y Kubernetes.',
-            duracion: 'Calculando...',
-            categoria: 'devops',
-            miniatura:
-                'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=800&auto=format&fit=crop',
-            archivo: 'videos/docker.mp4'
-        },
-        {
-            id: 3,
-            titulo: 'Modelado de bases de datos con PostgreSQL',
-            descripcion:
-                'Principios para diseñar y administrar bases de datos relacionales.',
-            duracion: 'Calculando...',
-            categoria: 'base-datos',
-            miniatura:
-                'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=800&auto=format&fit=crop',
-            archivo: 'videos/postgresql.mp4'
-        },
-        {
-            id: 4,
-            titulo: 'Principios de UI/UX para desarrollo web',
-            descripcion:
-                'Fundamentos de diseño de interfaces y experiencia de usuario.',
-            duracion: 'Calculando...',
-            categoria: 'diseno',
-            miniatura:
-                'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=800&auto=format&fit=crop',
-            archivo: 'videos/diseno.mp4'
-        }
-    ];
+    videos: Video[] = [];
 
     ngOnInit(): void {
-        this.calcularDuracionVideosIniciales();
+        this.cargarVideos();
     }
 
     get videosFiltrados(): Video[] {
@@ -115,159 +65,60 @@ export class VideosComponent implements OnInit, OnDestroy {
 
         return this.videos.filter((video: Video) => {
             const coincideTexto =
-                video.titulo.toLowerCase().includes(texto) ||
-                video.descripcion.toLowerCase().includes(texto);
+                video.title.toLowerCase().includes(texto) ||
+                (video.description ?? '')
+                    .toLowerCase()
+                    .includes(texto);
 
             const coincideCategoria =
                 this.categoriaSeleccionada === 'todos' ||
-                video.categoria === this.categoriaSeleccionada;
+                video.category === this.categoriaSeleccionada;
 
             return coincideTexto && coincideCategoria;
         });
     }
 
-    /**
-     * Calcula automáticamente la duración de los videos
-     * que están registrados inicialmente en el arreglo.
-     */
-    calcularDuracionVideosIniciales(): void {
-        this.videos.forEach((video: Video) => {
-            this.obtenerDuracionDesdeUrl(video.archivo)
-                .then((duracion: string) => {
-                    video.duracion = duracion;
-                })
-                .catch(() => {
-                    video.duracion = 'No disponible';
-                });
-        });
-    }
+    async cargarVideos(): Promise<void> {
+        this.cargando = true;
+        this.mensajeError = '';
 
-    /**
-     * Obtiene la duración de un video mediante su URL.
-     */
-    obtenerDuracionDesdeUrl(url: string): Promise<string> {
-        return new Promise((
-            resolve: (value: string) => void,
-            reject: () => void
-        ) => {
-            const elementoVideo = document.createElement('video');
-
-            elementoVideo.preload = 'metadata';
-            elementoVideo.src = url;
-
-            elementoVideo.onloadedmetadata = () => {
-                const duracion = this.formatearDuracion(
-                    elementoVideo.duration
-                );
-
-                elementoVideo.removeAttribute('src');
-                elementoVideo.load();
-
-                resolve(duracion);
-            };
-
-            elementoVideo.onerror = () => {
-                elementoVideo.removeAttribute('src');
-                elementoVideo.load();
-
-                reject();
-            };
-        });
+        try {
+            this.videos = await this.videosService.findAll();
+        } catch {
+            this.mensajeError =
+                'No se pudieron cargar los videos del servidor.';
+        } finally {
+            this.cargando = false;
+        }
     }
 
     abrirFormulario(): void {
+        this.videoEnEdicion = null;
         this.mostrarFormulario = true;
         this.mensajeError = '';
+        this.nuevoTitulo = '';
+        this.nuevaDescripcion = '';
+        this.nuevaCategoria = '';
+        this.nuevoVideoId = '';
+    }
+
+    abrirEdicion(video: Video): void {
+        this.videoEnEdicion = video;
+        this.mostrarFormulario = true;
+        this.mensajeError = '';
+        this.nuevoTitulo = video.title;
+        this.nuevaDescripcion = video.description ?? '';
+        this.nuevaCategoria = video.category;
+        this.nuevoVideoId = video.videoId;
     }
 
     cerrarFormulario(): void {
         this.mostrarFormulario = false;
+        this.videoEnEdicion = null;
         this.limpiarFormulario();
     }
 
-    seleccionarArchivo(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const archivo = input.files?.[0];
-
-        this.mensajeError = '';
-
-        if (!archivo) {
-            return;
-        }
-
-        const formatosPermitidos = [
-            'video/mp4',
-            'video/webm',
-            'video/ogg'
-        ];
-
-        if (!formatosPermitidos.includes(archivo.type)) {
-            this.mensajeError =
-                'Formato no permitido. Selecciona un archivo MP4, WebM u OGG.';
-
-            input.value = '';
-            return;
-        }
-
-        // Tamaño máximo: 200 MB
-        const tamanioMaximo = 200 * 1024 * 1024;
-
-        if (archivo.size > tamanioMaximo) {
-            this.mensajeError =
-                'El archivo supera el tamaño máximo permitido de 200 MB.';
-
-            input.value = '';
-            return;
-        }
-
-        this.archivoSeleccionado = archivo;
-        this.nombreArchivo = archivo.name;
-        this.duracionArchivo = 'Calculando...';
-
-        // Utiliza el nombre del archivo como título inicial
-        if (!this.nuevoTitulo.trim()) {
-            this.nuevoTitulo = archivo.name.replace(
-                /\.[^/.]+$/,
-                ''
-            );
-        }
-
-        this.calcularDuracionArchivo(archivo);
-    }
-
-    /**
-     * Calcula automáticamente la duración del archivo
-     * seleccionado desde la computadora.
-     */
-    calcularDuracionArchivo(archivo: File): void {
-        const urlTemporal = URL.createObjectURL(archivo);
-        const elementoVideo = document.createElement('video');
-
-        elementoVideo.preload = 'metadata';
-        elementoVideo.src = urlTemporal;
-
-        elementoVideo.onloadedmetadata = () => {
-            this.duracionArchivo = this.formatearDuracion(
-                elementoVideo.duration
-            );
-
-            elementoVideo.removeAttribute('src');
-            elementoVideo.load();
-
-            URL.revokeObjectURL(urlTemporal);
-        };
-
-        elementoVideo.onerror = () => {
-            this.duracionArchivo = 'No disponible';
-
-            elementoVideo.removeAttribute('src');
-            elementoVideo.load();
-
-            URL.revokeObjectURL(urlTemporal);
-        };
-    }
-
-    agregarVideo(): void {
+    async guardarVideo(): Promise<void> {
         this.mensajeError = '';
 
         if (!this.nuevoTitulo.trim()) {
@@ -276,9 +127,9 @@ export class VideosComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.nuevaDescripcion.trim()) {
+        if (!this.nuevoVideoId.trim()) {
             this.mensajeError =
-                'Debes escribir una descripción.';
+                'Debes escribir el ID o la URL del video.';
             return;
         }
 
@@ -288,40 +139,53 @@ export class VideosComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.archivoSeleccionado) {
-            this.mensajeError =
-                'Debes seleccionar un archivo de video.';
-            return;
-        }
-
-        if (this.duracionArchivo === 'Calculando...') {
-            this.mensajeError =
-                'Espera mientras se calcula la duración del video.';
-            return;
-        }
-
-        const urlVideo = URL.createObjectURL(
-            this.archivoSeleccionado
-        );
-
-        const nuevoVideo: Video = {
-            id: Date.now(),
-            titulo: this.nuevoTitulo.trim(),
-            descripcion: this.nuevaDescripcion.trim(),
-            duracion: this.duracionArchivo,
-            categoria: this.nuevaCategoria,
-            miniatura:
-                'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800&auto=format&fit=crop',
-            archivo: urlVideo,
-            temporal: true
+        const payload = {
+            title: this.nuevoTitulo.trim(),
+            videoId: this.nuevoVideoId.trim(),
+            category: this.nuevaCategoria,
+            description:
+                this.nuevaDescripcion.trim() || null,
+            thumbnailUrl: null
         };
 
-        this.videos = [
-            nuevoVideo,
-            ...this.videos
-        ];
+        try {
+            if (this.videoEnEdicion) {
+                await this.videosService.update(
+                    this.videoEnEdicion.id,
+                    payload
+                );
+            } else {
+                await this.videosService.create(payload);
+            }
 
-        this.cerrarFormulario();
+            this.cerrarFormulario();
+            await this.cargarVideos();
+        } catch {
+            this.mensajeError =
+                'No se pudo guardar el video. Verifica la conexión.';
+        }
+    }
+
+    async eliminarVideo(video: Video): Promise<void> {
+        const confirmado = window.confirm(
+            `¿Seguro que deseas eliminar "${video.title}"?`
+        );
+
+        if (!confirmado) {
+            return;
+        }
+
+        if (this.videoSeleccionado?.id === video.id) {
+            this.videoSeleccionado = null;
+        }
+
+        try {
+            await this.videosService.remove(video.id);
+            await this.cargarVideos();
+        } catch {
+            this.mensajeError =
+                'No se pudo eliminar el video.';
+        }
     }
 
     reproducirVideo(video: Video): void {
@@ -341,23 +205,6 @@ export class VideosComponent implements OnInit, OnDestroy {
         this.videoSeleccionado = null;
     }
 
-    eliminarVideo(video: Video): void {
-        if (this.videoSeleccionado?.id === video.id) {
-            this.videoSeleccionado = null;
-        }
-
-        if (
-            video.temporal &&
-            video.archivo.startsWith('blob:')
-        ) {
-            URL.revokeObjectURL(video.archivo);
-        }
-
-        this.videos = this.videos.filter(
-            (item: Video) => item.id !== video.id
-        );
-    }
-
     limpiarFiltros(): void {
         this.textoBusqueda = '';
         this.categoriaSeleccionada = 'todos';
@@ -367,70 +214,78 @@ export class VideosComponent implements OnInit, OnDestroy {
         this.nuevoTitulo = '';
         this.nuevaDescripcion = '';
         this.nuevaCategoria = '';
-        this.archivoSeleccionado = null;
-        this.nombreArchivo = '';
-        this.duracionArchivo = '00:00';
-        this.mensajeError = '';
+        this.nuevoVideoId = '';
     }
 
-    /**
-     * Convierte segundos en:
-     * MM:SS cuando dura menos de una hora.
-     * HH:MM:SS cuando dura una hora o más.
-     */
-    formatearDuracion(segundosTotales: number): string {
-        if (
-            !Number.isFinite(segundosTotales) ||
-            segundosTotales < 0
-        ) {
-            return '00:00';
+    obtenerUrlReproduccion(video: Video): string {
+        const id = this.extraerProveedorId(video.videoId);
+
+        if (this.esYoutube(video.videoId)) {
+            return `https://www.youtube.com/embed/${id}`;
         }
 
-        const horas = Math.floor(
-            segundosTotales / 3600
+        if (this.esVimeo(video.videoId)) {
+            return `https://player.vimeo.com/video/${id}`;
+        }
+
+        return video.videoId;
+    }
+
+    obtenerUrlSegura(video: Video): SafeResourceUrl {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(
+            this.obtenerUrlReproduccion(video)
+        );
+    }
+
+    private esYoutube(valor: string): boolean {
+        return (
+            valor.includes('youtube') ||
+            valor.includes('youtu.be')
+        );
+    }
+
+    private esVimeo(valor: string): boolean {
+        return valor.includes('vimeo');
+    }
+
+    private extraerProveedorId(valor: string): string {
+        const coincidencia = valor.match(
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/|youtube\.com\/embed\/)([\w-]+)/
         );
 
+        if (coincidencia) {
+            return coincidencia[1];
+        }
+
+        return valor;
+    }
+
+    formatearDuracion(segundos: number | null): string {
+        if (
+            segundos === null ||
+            segundos === undefined ||
+            !Number.isFinite(segundos) ||
+            segundos < 0
+        ) {
+            return '—';
+        }
+
+        const horas = Math.floor(segundos / 3600);
         const minutos = Math.floor(
-            (segundosTotales % 3600) / 60
+            (segundos % 3600) / 60
         );
-
-        const segundos = Math.floor(
-            segundosTotales % 60
-        );
-
-        const minutosFormateados = minutos
-            .toString()
-            .padStart(2, '0');
-
-        const segundosFormateados = segundos
-            .toString()
-            .padStart(2, '0');
+        const secs = Math.floor(segundos % 60);
 
         if (horas > 0) {
-            const horasFormateadas = horas
-                .toString()
-                .padStart(2, '0');
-
-            return (
-                `${horasFormateadas}:` +
-                `${minutosFormateados}:` +
-                `${segundosFormateados}`
-            );
+            return `${this.pad(horas)}:${this.pad(
+                minutos
+            )}:${this.pad(secs)}`;
         }
 
-        return (
-            `${minutosFormateados}:` +
-            `${segundosFormateados}`
-        );
+        return `${this.pad(minutos)}:${this.pad(secs)}`;
     }
 
-    ngOnDestroy(): void {
-        this.videos
-            .filter((video: Video) => video.temporal)
-            .forEach((video: Video) => {
-                if (video.archivo.startsWith('blob:')) {
-                    URL.revokeObjectURL(video.archivo);
-                }
-            });
+    private pad(valor: number): string {
+        return valor.toString().padStart(2, '0');
     }
 }
