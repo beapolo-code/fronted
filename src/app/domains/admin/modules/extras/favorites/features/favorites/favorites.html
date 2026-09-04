@@ -98,10 +98,23 @@
     </div>
 
 
+    <!-- Cargando -->
+    @if (loading) {
+
+        <div
+            class="flex items-center justify-center py-16 text-gray-400"
+        >
+            Cargando favoritos...
+        </div>
+
+    }
+
     <!-- Tarjetas -->
+    @if (!loading) {
+
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-        @for (book of filteredBooks; track book.title) {
+        @for (book of filteredBooks; track book.id) {
 
             <mat-card
                 class="overflow-hidden transition-shadow hover:shadow-xl"
@@ -111,8 +124,8 @@
                 <div class="aspect-[3/4] overflow-hidden bg-gray-200">
 
                     <img
-                        [src]="getCover(book.isbn)"
-                        [alt]="'Portada de ' + book.title"
+                        [src]="getCover(book.id, book.imagen)"
+                        [alt]="'Portada de ' + book.titulo"
                         class="h-full w-full object-cover"
                     />
 
@@ -128,7 +141,7 @@
                         <span
                             class="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700"
                         >
-                            {{ book.category }}
+                            {{ book.categoria }}
                         </span>
 
                     </div>
@@ -136,19 +149,13 @@
 
                     <!-- Título -->
                     <h2 class="text-lg font-semibold text-gray-900">
-                        {{ book.title }}
+                        {{ book.titulo }}
                     </h2>
 
 
                     <!-- Autor -->
                     <p class="mt-2 text-sm text-gray-600">
-                        {{ book.author }}
-                    </p>
-
-
-                    <!-- Año -->
-                    <p class="mt-1 text-sm text-gray-500">
-                        Año: {{ book.year }}
+                        {{ book.autor }}
                     </p>
 
                 </mat-card-content>
@@ -175,20 +182,15 @@
                     </button>
 
 
-                    <!-- Favorito -->
+                    <!-- Quitar de favoritos -->
                     <button
                         mat-icon-button
-                        [attr.aria-label]="book.favorite
-                            ? 'Quitar de favoritos'
-                            : 'Agregar a favoritos'"
+                        aria-label="Quitar de favoritos"
                         (click)="toggleFavorite(book)"
                     >
 
                         <mat-icon>
-                            {{ book.favorite
-                                ? 'favorite'
-                                : 'favorite_border'
-                            }}
+                            favorite
                         </mat-icon>
 
                     </button>
@@ -201,9 +203,10 @@
 
     </div>
 
+    }
 
     <!-- Sin resultados -->
-    @if (filteredBooks.length === 0) {
+    @if (filteredBooks.length === 0 && !loading) {
 
         <div
             class="flex flex-col items-center justify-center py-16 text-center"
