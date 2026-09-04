@@ -151,13 +151,6 @@ export const NAVIGATION: NavigationItem[] = [
         activeOptions: { exact: false },
       },
       {
-        id: 'biblioteca/mi-componente',
-        label: 'Mi Componente',
-        icon: 'component',
-        route: '/admin/mi-componente',
-        activeOptions: { exact: false },
-      },
-      {
         id: 'biblioteca/categories',
         label: 'Categorías',
         icon: 'category',

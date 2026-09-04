@@ -68,6 +68,6 @@ export class LibrosCategoria implements OnInit {
 	}
 
 	volver() {
-		this.router.navigate(['/admin/mi-componente']);
+		this.router.navigate(['/admin/pages/categories']);
 	}
 }
