@@ -14,6 +14,11 @@ export const ADMIN_ROUTES: Routes = [
 			// -----------------------------------------------------------------------
 			{
 				path: 'libros-categoria',
+				redirectTo: 'libros-categoria/General',
+				pathMatch: 'full',
+			},
+			{
+				path: 'libros-categoria/:categoria',
 				loadComponent: () =>
 					import('../../pages/libros-categoria/libros-categoria').then(
 						(m) => m.LibrosCategoria

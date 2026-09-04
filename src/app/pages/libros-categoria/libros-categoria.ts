@@ -60,7 +60,11 @@ export class LibrosCategoria implements OnInit {
 	}
 
 	get filteredBooks() {
-		return this.books().filter((book) => book.category === this.categoria());
+		const cat = this.categoria();
+		if (!cat || cat.toLowerCase() === 'general') {
+			return this.books();
+		}
+		return this.books().filter((book) => book.category === cat);
 	}
 
 	volver() {
