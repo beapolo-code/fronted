@@ -1,12 +1,12 @@
-<div class="min-h-screen bg-gray-50 p-6">
+<div class="min-h-screen bg-slate-950 p-6">
 
     <!-- Encabezado -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">
+        <h1 class="text-3xl font-bold text-white">
             Mis Favoritos
         </h1>
 
-        <p class="mt-2 text-gray-600">
+        <p class="mt-2 text-slate-400">
             Explora los libros que has guardado en tu biblioteca virtual.
         </p>
     </div>
@@ -28,6 +28,7 @@
                 matInput
                 [(ngModel)]="search"
                 placeholder="Título o autor"
+                class="text-white"
             />
 
             <mat-icon matSuffix>
@@ -47,37 +48,29 @@
             <button
                 mat-stroked-button
                 (click)="selectCategory(category)"
+                [class.bg-primary]="category === selectedCategory"
+                [class.text-white]="category === selectedCategory"
+                [class.border-slate-700]="category === selectedCategory"
+                [class.bg-slate-800]="category !== selectedCategory"
+                [class.hover:bg-slate-700]="category !== selectedCategory"
+                class="border-slate-700 transition-colors"
             >
 
-                @if (category === 'Todos') {
-                    <mat-icon>
+                <mat-icon>
+                    @if (category === 'Todos') {
                         library_books
-                    </mat-icon>
-                }
-
-                @if (category === 'Diseño de Modas') {
-                    <mat-icon>
+                    } @else if (category === 'Diseño de Modas') {
                         checkroom
-                    </mat-icon>
-                }
-
-                @if (category === 'Desarrollo de Software') {
-                    <mat-icon>
+                    } @else if (category === 'Desarrollo de Software') {
                         code
-                    </mat-icon>
-                }
-
-                @if (category === 'Marketing Digital') {
-                    <mat-icon>
+                    } @else if (category === 'Marketing Digital') {
                         campaign
-                    </mat-icon>
-                }
-
-                @if (category === 'Arte Culinario') {
-                    <mat-icon>
+                    } @else if (category === 'Arte Culinario') {
                         restaurant
-                    </mat-icon>
-                }
+                    } @else {
+                        library_books
+                    }
+                </mat-icon>
 
                 {{ category }}
 
@@ -91,7 +84,7 @@
     <!-- Cantidad de libros -->
     <div class="mb-6">
 
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-slate-400">
             {{ filteredBooks.length }} libros encontrados
         </p>
 
@@ -102,7 +95,7 @@
     @if (loading) {
 
         <div
-            class="flex items-center justify-center py-16 text-gray-400"
+            class="flex items-center justify-center py-16 text-slate-400"
         >
             Cargando favoritos...
         </div>
@@ -117,11 +110,11 @@
         @for (book of filteredBooks; track book.id) {
 
             <mat-card
-                class="overflow-hidden transition-shadow hover:shadow-xl"
+                class="overflow-hidden bg-slate-900 text-white transition-shadow hover:shadow-xl"
             >
 
                 <!-- Portada -->
-                <div class="aspect-[3/4] overflow-hidden bg-gray-200">
+                <div class="aspect-[3/4] overflow-hidden bg-slate-800">
 
                     <img
                         [src]="getCover(book.id, book.imagen)"
@@ -139,7 +132,7 @@
                     <div class="mb-3">
 
                         <span
-                            class="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700"
+                            class="rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary"
                         >
                             {{ book.categoria }}
                         </span>
@@ -148,13 +141,13 @@
 
 
                     <!-- Título -->
-                    <h2 class="text-lg font-semibold text-gray-900">
+                    <h2 class="text-lg font-semibold text-white">
                         {{ book.titulo }}
                     </h2>
 
 
                     <!-- Autor -->
-                    <p class="mt-2 text-sm text-gray-600">
+                    <p class="mt-2 text-sm text-slate-400">
                         {{ book.autor }}
                     </p>
 
@@ -185,6 +178,7 @@
                     <!-- Quitar de favoritos -->
                     <button
                         mat-icon-button
+                        color="warn"
                         aria-label="Quitar de favoritos"
                         (click)="toggleFavorite(book)"
                     >
@@ -213,16 +207,16 @@
         >
 
             <mat-icon
-                class="mb-4 !h-12 !w-12 !text-5xl text-gray-400"
+                class="mb-4 !h-12 !w-12 !text-5xl text-slate-500"
             >
                 search_off
             </mat-icon>
 
-            <h2 class="text-xl font-semibold text-gray-700">
+            <h2 class="text-xl font-semibold text-slate-300">
                 No encontramos libros
             </h2>
 
-            <p class="mt-2 text-gray-500">
+            <p class="mt-2 text-slate-500">
                 Intenta buscar otro título, autor o categoría.
             </p>
 

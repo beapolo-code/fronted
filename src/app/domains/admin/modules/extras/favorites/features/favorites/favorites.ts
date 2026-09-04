@@ -131,13 +131,13 @@ export default class FavoritesComponent {
   selector: 'app-book-details-dialog',
 
   template: `
-    <div class="p-6">
+    <div class="bg-slate-900 p-6 text-white">
 
       <!-- Encabezado -->
 
       <div class="flex items-center justify-between">
 
-        <h2 class="text-2xl font-bold text-gray-900">
+        <h2 class="text-2xl font-bold text-white">
           {{ data.titulo }}
         </h2>
 
@@ -171,20 +171,20 @@ export default class FavoritesComponent {
 
         <div>
 
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-slate-400">
             Autor
           </p>
 
-          <p class="font-medium text-gray-900">
+          <p class="font-medium text-white">
             {{ data.autor }}
           </p>
 
 
-          <p class="mt-4 text-sm text-gray-500">
+          <p class="mt-4 text-sm text-slate-400">
             Categoría
           </p>
 
-          <p class="font-medium text-gray-900">
+          <p class="font-medium text-white">
             {{ data.categoria }}
           </p>
 
