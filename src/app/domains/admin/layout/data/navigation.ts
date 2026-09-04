@@ -151,10 +151,10 @@ export const NAVIGATION: NavigationItem[] = [
         activeOptions: { exact: false },
       },
       {
-        id: 'biblioteca/categories',
-        label: 'Categorías',
-        icon: 'category',
-        route: '/admin/pages/categories',
+id: 'biblioteca/categories',
+          label: 'Categorías',
+          icon: 'folder-open',
+          route: '/admin/pages/categories',
         activeOptions: { exact: false },
       },
       {
