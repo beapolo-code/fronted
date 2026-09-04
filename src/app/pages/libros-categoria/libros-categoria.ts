@@ -32,7 +32,8 @@ export class LibrosCategoria implements OnInit {
 		private router: Router,
 	) {
 		this.route.paramMap.subscribe((params) => {
-			this.categoria.set(params.get('categoria') ?? '');
+			const raw = params.get('categoria') ?? '';
+			this.categoria.set(decodeURIComponent(raw));
 		});
 	}
 
