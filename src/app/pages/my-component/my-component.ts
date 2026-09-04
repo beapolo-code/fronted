@@ -1,15 +1,17 @@
-import { Component, computed, signal } from '@angular/core';
+import {
+  Component,
+  signal,
+  PLATFORM_ID,
+  OnInit,
+  inject,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-
-interface CategoryBook {
-	title: string;
-	author: string;
-	format: string;
-	year: number;
-}
+import { CategoriaService } from './categoria.service';
 
 @Component({
 	selector: 'app-my-component',
@@ -21,56 +23,31 @@ interface CategoryBook {
 	],
 	templateUrl: './my-component.html',
 })
-export class MyComponent {
-	categories = signal([
-		'Investigación Yavirac',
-		'Diseño de Modas',
-		'Libros Físicos',
-		'Idiomas',
-		'Desarrollo de Software',
-		'Repositorio de los trabajos de titulación',
-		'Marketing',
-		'Arte Culinario',
-		'Guía Nacional de Turismo',
-	]);
+export class MyComponent implements OnInit {
+	private categoriaService = inject(CategoriaService);
+	private platformId = inject(PLATFORM_ID);
+	private router = inject(Router);
 
-	books: Record<string, CategoryBook[]> = {
-		'Investigación Yavirac': [
-			{
-				title: 'Investigación Aplicada en Tecnología',
-				author: 'Instituto Yavirac',
-				format: 'PDF',
-				year: 2024,
-			},
-		],
-		'Diseño de Modas': [
-			{
-				title: 'Illustrating Fashion',
-				author: 'Steven Stipelman',
-				format: 'PDF',
-				year: 1996,
-			},
-		],
-		'Desarrollo de Software': [
-			{
-				title: 'Programación Web con Angular',
-				author: 'Luis Andrade',
-				format: 'PDF',
-				year: 2025,
-			},
-		],
-	};
-
-	selectedCategory = signal<string | null>(null);
+	categories = signal<string[]>([]);
 
 	showForm = signal(false);
 	newCategoryName = signal('');
 	newCategoryDescription = signal('');
 
-	filteredBooks = computed(() => {
-		const category = this.selectedCategory();
-		return category ? (this.books[category] ?? []) : [];
-	});
+	ngOnInit(): void {
+		if (isPlatformBrowser(this.platformId)) {
+			this.cargarCategorias();
+		}
+	}
+
+	private cargarCategorias(): void {
+		this.categoriaService.obtenerCategorias().subscribe({
+			next: (cats) => {
+				this.categories.set(cats.map((c) => c.nombre));
+			},
+			error: (err) => console.error('Error al cargar categorías:', err),
+		});
+	}
 
 	openForm(): void {
 		this.showForm.set(true);
@@ -89,15 +66,21 @@ export class MyComponent {
 			return;
 		}
 
-		this.categories.update((categories) => [...categories, name]);
-		this.cancelForm();
+		this.categoriaService
+			.crearCategoria({
+				nombre: name,
+				descripcion: this.newCategoryDescription().trim() || undefined,
+			})
+			.subscribe({
+				next: () => {
+					this.cancelForm();
+					this.cargarCategorias();
+				},
+				error: (err) => console.error('Error al crear categoría:', err),
+			});
 	}
 
 	goToCategory(category: string): void {
-		this.selectedCategory.set(category);
-	}
-
-	volver(): void {
-		this.selectedCategory.set(null);
+		this.router.navigate(['/admin/libros-categoria', encodeURIComponent(category)]);
 	}
 }

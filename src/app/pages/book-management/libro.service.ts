@@ -1,7 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Libro } from './libro.model';
+
+interface Envelope<T> {
+  data: T;
+  pagination?: T;
+  message?: string;
+  title?: string;
+  version?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,18 +19,24 @@ export class LibroService {
   private apiUrl = 'http://localhost:3000/api/v1/books'; // URL de NestJS
 
   obtenerLibros(): Observable<Libro[]> {
-    return this.http.get<Libro[]>(this.apiUrl);
+    return this.http
+      .get<Envelope<Libro[]>>(this.apiUrl)
+      .pipe(map((resp) => resp.data));
   }
 
   crearLibro(libro: Omit<Libro, 'id'>): Observable<Libro> {
-    return this.http.post<Libro>(this.apiUrl, libro);
+    return this.http
+      .post<Envelope<Libro>>(this.apiUrl, libro)
+      .pipe(map((resp) => resp.data));
   }
 
   eliminarLibro(id: number | string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<Envelope<void>>(`${this.apiUrl}/${id}`).pipe(map(() => undefined));
   }
 
-  actualizarEstado(id: number | string, estado: string): Observable<Libro> {
-    return this.http.patch<Libro>(`${this.apiUrl}/${id}`, { estado });
+  actualizarEstado(id: number | string, estado: Libro['estado']): Observable<Libro> {
+    return this.http
+      .patch<Envelope<Libro>>(`${this.apiUrl}/${id}`, { estado })
+      .pipe(map((resp) => resp.data));
   }
 }
