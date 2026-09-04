@@ -59,16 +59,6 @@ export class UsuariosComponent {
   });
   readonly cargando = signal(false);
 
-  readonly columnas: string[] = [
-    'id_temp',
-    'name',
-    'email',
-    'role',
-    'is_active',
-    'created_at',
-    'acciones',
-  ];
-
   readonly usuarios = signal<Usuario[]>([]);
 
   readonly usuariosFiltrados = computed(() => {
@@ -103,8 +93,8 @@ export class UsuariosComponent {
     this.usuarioEditandoId() ? 'Editar usuario' : 'Registrar nuevo usuario'
   );
 
-  async ngOnInit(): Promise<void> {
-    await this.cargarUsuarios();
+  constructor() {
+    void this.cargarUsuarios();
   }
 
   async cargarUsuarios(): Promise<void> {
@@ -277,10 +267,6 @@ export class UsuariosComponent {
     } catch {
       this.mensaje.set('No se pudo eliminar el usuario.');
     }
-  }
-
-  trackById(index: number, usuario: Usuario): string {
-    return usuario.id;
   }
 
   private correoValido(email: string): boolean {

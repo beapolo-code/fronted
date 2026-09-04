@@ -267,95 +267,81 @@
         <p class="text-neutral-500">Cargando usuarios...</p>
       </div>
     } @else if (usuariosFiltrados().length > 0) {
-      <table
-        mat-table
-        [dataSource]="usuariosFiltrados()"
-        [trackBy]="trackById"
-        class="w-full whitespace-nowrap"
-      >
-        <ng-container matColumnDef="id_temp">
-          <th mat-header-cell *matHeaderCellDef>Código</th>
+      <div class="overflow-x-auto">
+        @for (usuario of usuariosFiltrados(); track usuario.id) {
+          <div
+            class="flex flex-col gap-1 border-b border-neutral-200 px-6 py-4 sm:flex-row sm:items-center dark:border-neutral-800"
+          >
+            <!-- Código -->
+            <div class="w-full sm:w-28">
+              <p class="text-xs text-neutral-500 sm:hidden">Código</p>
+              <p class="text-sm font-medium">
+                {{ usuario.id_temp || 'Sin código' }}
+              </p>
+            </div>
 
-          <td mat-cell *matCellDef="let usuario">
-            {{ usuario.id_temp || 'Sin código' }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Usuario</th>
-
-          <td mat-cell *matCellDef="let usuario">
-            <div class="flex items-center gap-3">
+            <!-- Usuario -->
+            <div class="flex w-full items-center gap-3 sm:w-64">
               <div
-                class="flex size-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
               >
-                {{ usuario.name.charAt(0) }}
+                {{ (usuario.name || '?').charAt(0) }}
               </div>
 
               <div>
                 <p class="font-medium">{{ usuario.name }}</p>
-
                 <p class="max-w-40 truncate text-xs text-neutral-500">
                   {{ usuario.id }}
                 </p>
               </div>
             </div>
-          </td>
-        </ng-container>
 
-        <ng-container matColumnDef="email">
-          <th mat-header-cell *matHeaderCellDef>Correo</th>
+            <!-- Correo -->
+            <div class="w-full sm:flex-1">
+              <p class="text-xs text-neutral-500 sm:hidden">Correo</p>
+              <p class="text-sm">{{ usuario.email }}</p>
+            </div>
 
-          <td mat-cell *matCellDef="let usuario">
-            {{ usuario.email }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="role">
-          <th mat-header-cell *matHeaderCellDef>Rol</th>
-
-          <td mat-cell *matCellDef="let usuario">
-            <span
-              class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-            >
-              {{ usuario.role === 'admin' ? 'Administrador' : 'Usuario' }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="is_active">
-          <th mat-header-cell *matHeaderCellDef>Estado</th>
-
-          <td mat-cell *matCellDef="let usuario">
-            @if (usuario.is_active) {
+            <!-- Rol -->
+            <div class="w-full sm:w-36">
+              <p class="text-xs text-neutral-500 sm:hidden">Rol</p>
               <span
-                class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-900 dark:text-green-200"
+                class="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
               >
-                Activo
+                {{
+                  usuario.role === 'admin' ? 'Administrador' : 'Usuario'
+                }}
               </span>
-            } @else {
-              <span
-                class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-900 dark:text-red-200"
-              >
-                Inactivo
-              </span>
-            }
-          </td>
-        </ng-container>
+            </div>
 
-        <ng-container matColumnDef="created_at">
-          <th mat-header-cell *matHeaderCellDef>Fecha de creación</th>
+            <!-- Estado -->
+            <div class="w-full sm:w-28">
+              <p class="text-xs text-neutral-500 sm:hidden">Estado</p>
+              @if (usuario.is_active) {
+                <span
+                  class="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-900 dark:text-green-200"
+                >
+                  Activo
+                </span>
+              } @else {
+                <span
+                  class="inline-block rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-900 dark:text-red-200"
+                >
+                  Inactivo
+                </span>
+              }
+            </div>
 
-          <td mat-cell *matCellDef="let usuario">
-            {{ usuario.created_at | date: 'dd/MM/yyyy HH:mm' }}
-          </td>
-        </ng-container>
+            <!-- Fecha -->
+            <div class="w-full sm:w-40">
+              <p class="text-xs text-neutral-500 sm:hidden">Creado</p>
+              <p class="text-sm">
+                {{ usuario.created_at | date: 'dd/MM/yyyy HH:mm' }}
+              </p>
+            </div>
 
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-
-          <td mat-cell *matCellDef="let usuario">
-            <div class="flex items-center">
+            <!-- Acciones -->
+            <div class="flex w-full items-center sm:w-auto">
               <button
                 mat-icon-button
                 matTooltip="Editar usuario"
@@ -388,17 +374,9 @@
                 <mat-icon svgIcon="trash-2"></mat-icon>
               </button>
             </div>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-
-        <tr
-          mat-row
-          *matRowDef="let usuario; columns: columnas"
-          class="hover:bg-neutral-50 dark:hover:bg-neutral-800"
-        ></tr>
-      </table>
+          </div>
+        }
+      </div>
     } @else {
       <div
         class="flex h-80 flex-col items-center justify-center px-6 text-center"
